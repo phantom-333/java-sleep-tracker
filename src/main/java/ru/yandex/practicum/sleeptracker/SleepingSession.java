@@ -5,15 +5,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import static ru.yandex.practicum.sleeptracker.SleepQuality.*;
 
 
 public class SleepingSession {
-    protected SleepQuality quality;
-    protected LocalDateTime startSession;
-    protected LocalDateTime endSession;
-    protected Duration duration;
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
+    protected final SleepQuality quality;
+    protected final LocalDateTime startSession;
+    protected final LocalDateTime endSession;
+    protected final Duration duration;
+    public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
     public SleepingSession(SleepQuality quality, LocalDateTime startSession, LocalDateTime endSession)
                                                     throws NullPointerException, IllegalArgumentException {
@@ -62,8 +61,8 @@ public class SleepingSession {
             throw new IllegalSleepingSessionFormat("Некорректный формат - аргумент равен null");
         }
         try {
-            startSession = LocalDateTime.parse(sessionParts[0], DATE_TIME_FORMATTER);
-            endSession = LocalDateTime.parse(sessionParts[1], DATE_TIME_FORMATTER);
+            startSession = LocalDateTime.parse(sessionParts[0], DATE_TIME_FORMAT);
+            endSession = LocalDateTime.parse(sessionParts[1], DATE_TIME_FORMAT);
         } catch (DateTimeParseException e) {
             throw new IllegalSleepingSessionFormat("Некорректный формат времени [dd.MM.yy HH:mm] в строке");
         }
@@ -94,8 +93,8 @@ public class SleepingSession {
 
     @Override
     public String toString() {
-        return startSession.format(DATE_TIME_FORMATTER) +
-                ";" + endSession.format(DATE_TIME_FORMATTER) +
+        return startSession.format(DATE_TIME_FORMAT) +
+                ";" + endSession.format(DATE_TIME_FORMAT) +
                 ";" + quality;
     }
 }

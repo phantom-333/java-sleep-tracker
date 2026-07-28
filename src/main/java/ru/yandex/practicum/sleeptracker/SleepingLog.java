@@ -7,9 +7,13 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SleepingLog {
-    protected ArrayList<SleepingSession> log;
+    protected List<SleepingSession> log;
 
     public SleepingLog(String fileLogPath) throws SleepingLogException {
         Path pathToFile;
@@ -24,11 +28,20 @@ public class SleepingLog {
         log = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileLogPath))) {
-            while (br.ready()) {
-                System.out.println(br.readLine());
-            }
+            log = br.lines()
+                    .filter(line -> !line.trim().isEmpty())
+                    .map(line -> {
+                        try {
+                            return SleepingSession.parse(line);
+                        } catch (IllegalSleepingSessionFormat e) {
+                            return null;
+                        }})
+                    .filter(sleepingSession -> sleepingSession != null)
+                    .collect(Collectors.toList());
+
         } catch (IOException e) {
             System.err.println("Ошибка чтения файла: " + e.getMessage());
         }
+        log.forEach(System.out::println);
     }
 }

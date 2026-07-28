@@ -55,7 +55,6 @@ public class SleepTrackerAppTest {
                     "метод parse() в классе SleepQuality выдает некорректный результат");
         } catch (IllegalSleepingSessionFormat e) {
             System.out.println(e.getMessage());
-
         }
 
         assertNotNull(session,"метод parse() в классе SleepQuality завершен с ошибкой");

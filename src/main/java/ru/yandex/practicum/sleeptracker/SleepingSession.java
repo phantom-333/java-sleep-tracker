@@ -4,14 +4,15 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.Objects;
 
 
 public class SleepingSession {
-    protected final SleepQuality quality;
-    protected final LocalDateTime startSession;
-    protected final LocalDateTime endSession;
-    protected final Duration duration;
+    private final SleepQuality quality;
+    private final LocalDateTime startSession;
+    private final LocalDateTime endSession;
+    private final Duration duration;
     public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
     public SleepingSession(SleepQuality quality, LocalDateTime startSession, LocalDateTime endSession)
@@ -55,27 +56,34 @@ public class SleepingSession {
         try {
             sessionParts = sessionStr.split(";");
             if (sessionParts.length != 3) {
-                throw new IllegalSleepingSessionFormat("Некорректный формат: количество частей в строке сессии не равно 3");
+                throw new IllegalSleepingSessionFormat("некорректный формат - " +
+                        "количество частей в строке сессии между разделителем ';' не равно 3");
             }
         } catch (NullPointerException e) {
-            throw new IllegalSleepingSessionFormat("Некорректный формат - аргумент равен null");
+            throw new IllegalSleepingSessionFormat("некорректный формат - аргумент равен null");
         }
         try {
             startSession = LocalDateTime.parse(sessionParts[0], DATE_TIME_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new IllegalSleepingSessionFormat("некорректный формат времени начала сна, " +
+                    "ожидалось [dd.MM.yy HH:mm], передано: " + sessionParts[0]);
+        }
+        try {
             endSession = LocalDateTime.parse(sessionParts[1], DATE_TIME_FORMAT);
         } catch (DateTimeParseException e) {
-            throw new IllegalSleepingSessionFormat("Некорректный формат времени [dd.MM.yy HH:mm] в строке");
+            throw new IllegalSleepingSessionFormat("некорректный формат времени окончания сна, " +
+                    "ожидалось [dd.MM.yy HH:mm], передано: " + sessionParts[1]);
         }
         try {
             quality = SleepQuality.valueOf(sessionParts[2].toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalSleepingSessionFormat("Некорректный формат качества сна (ожидалось: "
+            throw new IllegalSleepingSessionFormat("некорректный формат качества сна (ожидалось: "
                     + SleepQuality.enumToString() + "), передано: " + sessionParts[2]);
         }
         try {
             return new SleepingSession(quality, startSession, endSession);
         } catch (Exception e) {
-            throw new IllegalSleepingSessionFormat("Некорректный формат сессии сна " + e.getMessage());
+            throw new IllegalSleepingSessionFormat("некорректный формат сессии сна " + e.getMessage());
         }
     }
 
@@ -97,4 +105,25 @@ public class SleepingSession {
                 ";" + endSession.format(DATE_TIME_FORMAT) +
                 ";" + quality;
     }
+
+    public static Comparator<SleepingSession> durationComparator = new Comparator<>() {
+        @Override
+        public int compare(SleepingSession session1, SleepingSession session2) {
+            return session1.duration.compareTo(session2.duration);
+        }
+    };
+
+    public static Comparator<SleepingSession> startSleepSessionComparator = new Comparator<>() {
+        @Override
+        public int compare(SleepingSession session1, SleepingSession session2) {
+            return session1.startSession.compareTo(session2.startSession);
+        }
+    };
+
+    public static Comparator<SleepingSession> endSleepSessionComparator = new Comparator<>() {
+        @Override
+        public int compare(SleepingSession session1, SleepingSession session2) {
+            return session1.endSession.compareTo(session2.endSession);
+        }
+    };
 }

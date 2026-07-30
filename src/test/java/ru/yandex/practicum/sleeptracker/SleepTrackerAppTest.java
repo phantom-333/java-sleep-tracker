@@ -1,9 +1,28 @@
 package ru.yandex.practicum.sleeptracker;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import ru.yandex.practicum.sleeptracker.functions.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SleepTrackerAppTest {
+    protected static final String TEST_SLEEPING_LOG_FILE = "testFileSleeping.log";
+    private SleepingLog log;
+    private FileWriter fileWriter;
+    private PrintWriter testLogFile;
+    private String testFilePath;
+    private Function<SleepingLog, SleepAnalysisResult> function;
+    private PrintWriter pwLog = new PrintWriter(System.out);
+
+    @TempDir
+    Path tempDir;
 
     @Test
     public void sleepengSessionIlleggalArgumentTest() {
@@ -36,7 +55,6 @@ public class SleepTrackerAppTest {
     public void sleepengSessionTest() {
         LocalDateTime dateTime = LocalDateTime.parse("2026-07-15T00:30:15");
         SleepingSession session = new SleepingSession(SleepQuality.GOOD, dateTime, dateTime.plusHours(9));
-
         assertEquals(SleepQuality.GOOD, session.getQuality(),
                 "getQuality() в классе SleepQuality выдает некорректный результат");
         assertEquals(LocalDateTime.parse("2026-07-15T00:30:15"), session.getStartSession(),
@@ -56,8 +74,266 @@ public class SleepTrackerAppTest {
         } catch (IllegalSleepingSessionFormat e) {
             System.out.println(e.getMessage());
         }
-
         assertNotNull(session,"метод parse() в классе SleepQuality завершен с ошибкой");
+    }
+
+    @BeforeEach
+    public void preparingLogSessionForTest() {
+        Path tempFile = tempDir.resolve(TEST_SLEEPING_LOG_FILE);
+        try {
+            testFilePath = tempFile.toString();
+            fileWriter = new FileWriter(testFilePath);
+            testLogFile = new PrintWriter(fileWriter);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @AfterEach
+    public void closeResources() {
+        try {
+            testLogFile.close();
+            fileWriter.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Test
+    public void countSleepSessionsEmptyTest() {
+        function = new CountSleepSessions();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество сессий сна: 0", function.apply(log).toString(),
+                "Функция CountSleepSessions выдает неверный результат");
+    }
+
+    @Test
+    public void countSleepSessionsNoEmptyTest() {
+        function = new CountSleepSessions();
+        testLogFile.println("01.10.25 23:15;02.10.25 07:30;GOOD");
+        testLogFile.println("02.10.25 23:15;03.10.25 07:30;GOOD");
+        testLogFile.println("03.10.25 23:15;04.10.25 07:30;GOOD");
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество сессий сна: 3", function.apply(log).toString(),
+                "Функция CountSleepSessions выдает неверный результат");
+    }
+
+    @Test
+    public void countBadSleepSessions_Test_0() {
+        function = new CountBadSleepSessions();
+        testLogFile.println("01.10.25 23:15;02.10.25 07:30;GOOD");
+        testLogFile.println("02.10.25 23:15;03.10.25 07:30;NORMAL");
+        testLogFile.println("03.10.25 23:15;04.10.25 07:30;GOOD");
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество сессий с плохим качеством сна: 0", function.apply(log).toString(),
+                "Функция CountBadSleepSessions выдает неверный результат");
+    }
+
+    @Test
+    public void countBadSleepSessions_Test_3() {
+        function = new CountBadSleepSessions();
+        testLogFile.println("01.10.25 23:15;02.10.25 07:30;BAD");
+        testLogFile.println("02.10.25 23:15;03.10.25 07:30;BAD");
+        testLogFile.println("03.10.25 23:15;04.10.25 07:30;GOOD");
+        testLogFile.println("20.10.25 23:15;21.10.25 07:30;BAD");
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество сессий с плохим качеством сна: 3", function.apply(log).toString(),
+                "Функция CountBadSleepSessions выдает неверный результат");
+    }
+
+    @Test
+    public void minDurationSleepSession_Empty_Test() {
+        function = new MinDurationSleepSession();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Минимальная продолжительность сессии (в минутах): -", function.apply(log).toString(),
+                "Функция MinDurationSleepSession выдает неверный результат");
+    }
+
+    @Test
+    public void minDurationSleepSession_Test_90() {
+        function = new MinDurationSleepSession();
+        testLogFile.println("01.10.25 21:00;02.10.25 07:30;GOOD");
+        testLogFile.println("02.10.25 23:00;03.10.25 08:45;GOOD");
+        testLogFile.println("03.10.25 22:00;03.10.25 23:30;GOOD");
+        testLogFile.println("04.10.25 21:00;05.10.25 09:00;GOOD");
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Минимальная продолжительность сессии (в минутах): 90", function.apply(log).toString(),
+                "Функция MinDurationSleepSession выдает неверный результат");
+    }
+
+    @Test
+    public void maxDurationSleepSession_Empty_Test() {
+        function = new MaxDurationSleepSession();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Максимальная продолжительность сессии (в минутах): -", function.apply(log).toString(),
+                "Функция MaxDurationSleepSession выдает неверный результат");
+    }
+
+    @Test
+    public void maxDurationSleepSession_Test_600() {
+        function = new MaxDurationSleepSession();
+        testLogFile.println("01.10.25 23:15;02.10.25 07:30;GOOD");
+        testLogFile.println("02.10.25 21:00;03.10.25 07:00;GOOD");
+        testLogFile.println("03.10.25 23:15;04.10.25 07:30;GOOD");
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Максимальная продолжительность сессии (в минутах): 600", function.apply(log).toString(),
+                "Функция MaxDurationSleepSession выдает неверный результат");
+    }
+
+    @Test
+    public void averageSessionLength_Empty_Test() {
+        function = new AverageSessionLength();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Средняя продолжительность сессии (в минутах): 0", function.apply(log).toString(),
+                "Функция AverageSessionLength выдает неверный результат");
+    }
+
+    @Test
+    public void averageSessionLength_Test() {
+        function = new AverageSessionLength();
+        testLogFile.println("01.10.25 23:00;02.10.25 04:00;GOOD");  //300
+        testLogFile.println("02.10.25 21:00;03.10.25 07:00;GOOD");  //600
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Средняя продолжительность сессии (в минутах): 450,00", function.apply(log).toString(),
+                "Функция AverageSessionLength выдает неверный результат");
+    }
+
+    @Test
+    public void countSleeplessNight_Empty_Test() {
+        function = new CountSleeplessNight();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество бессонных ночей: -", function.apply(log).toString(),
+                "Функция CountSleeplessNight выдает неверный результат");
+    }
+
+    @Test
+    public void countSleeplessNight_Test_noSleepless() {
+        function = new CountSleeplessNight();
+        testLogFile.println("01.10.25 23:15;02.10.25 07:30;GOOD");
+        testLogFile.println("02.10.25 21:00;03.10.25 07:00;GOOD");
+        testLogFile.println("03.10.25 23:15;04.10.25 07:30;GOOD");
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество бессонных ночей: 0", function.apply(log).toString(),
+                "Функция CountSleeplessNight выдает неверный результат");
+    }
+
+    @Test
+    public void countSleeplessNight_Test_allSleepless() {
+        function = new CountSleeplessNight();
+        testLogFile.println("01.10.25 21:00;01.10.25 23:59;GOOD");  //01-02.10 - бессонная
+        testLogFile.println("02.10.25 13:00;02.10.25 15:00;GOOD");  //02-03.10 - бессонная
+        testLogFile.println("02.10.25 17:00;02.10.25 19:00;GOOD");  //02-03.10 - бессонная
+        testLogFile.println("03.10.25 13:00;03.10.25 14:00;GOOD");  //02-03.10 - бессонная
+        testLogFile.println("03.10.25 14:00;03.10.25 15:00;GOOD");  //02-03.10 - бессонная
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество бессонных ночей: 2", function.apply(log).toString(),
+                "Функция CountSleeplessNight выдает неверный результат");
+    }
+
+    @Test
+    public void countSleeplessNight_Test_manySleeplessSessions_And_OneNormal() {
+        function = new CountSleeplessNight();
+        testLogFile.println("01.10.25 23:00;02.10.25 00:30;GOOD");  //01-02.10 - не бессонная
+        testLogFile.println("02.10.25 01:00;02.10.25 02:00;GOOD");  //01-02.10 - не бессонная
+        testLogFile.println("02.10.25 03:00;02.10.25 04:00;GOOD");  //01-02.10 - не бессонная
+        testLogFile.println("03.10.25 07:00;03.10.25 09:00;GOOD");  //02-03.10 - бессонная
+
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество бессонных ночей: 1", function.apply(log).toString(),
+                "Функция CountSleeplessNight выдает неверный результат");
+    }
+
+    @Test
+    public void countSleeplessNight_Test_oneSleeplessSessions_at07_00() {
+        function = new CountSleeplessNight();
+        testLogFile.println("02.10.25 07:00;02.10.25 11:00;GOOD");  //01-02.10 - бессонная
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество бессонных ночей: 1", function.apply(log).toString(),
+                "Функция CountSleeplessNight выдает неверный результат");
+    }
+
+    @Test
+    public void countSleeplessNight_Test_oneSleeplessSessions_at13_00() {
+        function = new CountSleeplessNight();
+        testLogFile.println("02.10.25 13:00;02.10.25 15:00;GOOD");  //02-03.10 - бессонная
+        testLogFile.flush();
+        try {
+            log = new SleepingLog(pwLog, testFilePath);
+        } catch (SleepingLogException e) {
+            System.out.println(e.getMessage());
+        }
+        assertEquals("Количество бессонных ночей: 1", function.apply(log).toString(),
+                "Функция CountSleeplessNight выдает неверный результат");
     }
 
 }

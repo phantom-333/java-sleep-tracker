@@ -47,7 +47,7 @@ public class SleepTrackerApp {
                     System.out.println("------- Анализ статистики сна -------");
                     analyticalFunctions = loadFunctions();
                     analyticalFunctions.stream()
-                            .map(function -> function.apply(sleepingLog).toString())
+                            .map(function -> function.apply(sleepingLog))
                             .peek(System.out::println)
                             .collect(Collectors.toList());
                 } catch (SleepingLogException e) {

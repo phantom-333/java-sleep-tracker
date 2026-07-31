@@ -3,13 +3,10 @@ package ru.yandex.practicum.sleeptracker.functions;
 import ru.yandex.practicum.sleeptracker.*;
 
 import java.time.*;
-import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CountSleeplessNight implements Function<SleepingLog, SleepAnalysisResult> {
-    private static final LocalTime NORMAL_START_SLEEP_TIME = LocalTime.of(0, 0);
     private static final LocalTime NORMAL_END_SLEEP_TIME = LocalTime.of(6, 0);
 
     @Override

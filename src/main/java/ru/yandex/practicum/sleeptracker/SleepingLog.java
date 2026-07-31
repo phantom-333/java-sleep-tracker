@@ -1,4 +1,5 @@
 package ru.yandex.practicum.sleeptracker;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class SleepingLog {
         } catch (InvalidPathException | NullPointerException e) {
             throw new SleepingLogException("передан некорректный путь к файлу");
         }
-        if(!Files.isRegularFile(pathToFile)) {
+        if (!Files.isRegularFile(pathToFile)) {
             throw new SleepingLogException("по указанному пути файл с логом сессий сна отсутствует");
         }
         log = new ArrayList<>();
@@ -41,7 +42,8 @@ public class SleepingLog {
                         } catch (IllegalSleepingSessionFormat e) {
                             pwLog.printf("%sошибка парсинга строки \"%s\": %s\n", GetTime.now(), line, e.getMessage());
                             return null;
-                        }})
+                        }
+                    })
                     .filter(sleepingSession -> sleepingSession != null)
                     .collect(Collectors.toList());
 

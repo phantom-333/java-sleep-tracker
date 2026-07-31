@@ -1,5 +1,7 @@
 package ru.yandex.practicum.sleeptracker.functions;
+
 import ru.yandex.practicum.sleeptracker.*;
+
 import java.time.*;
 import java.util.List;
 import java.util.function.Function;
@@ -15,7 +17,9 @@ public class CountSleeplessNight implements Function<SleepingLog, SleepAnalysisR
         try {
             LocalDateTime startPeriodDateTime = sleepingLog.getLog().stream()
                     .min(SleepingSession.startSleepSessionComparator)
-                    .orElseThrow(() -> {throw new EmptyLogException();})
+                    .orElseThrow(() -> {
+                        throw new EmptyLogException();
+                    })
                     .getStartSession();
             if (startPeriodDateTime.getHour() > 12) {
                 startPeriodDateTime = startPeriodDateTime.plusDays(1);
@@ -24,7 +28,9 @@ public class CountSleeplessNight implements Function<SleepingLog, SleepAnalysisR
             LocalDate startDate = startPeriodDateTime.toLocalDate();
             LocalDate endDate = sleepingLog.getLog().stream()
                     .max(SleepingSession.endSleepSessionComparator)
-                    .orElseThrow(() -> {throw new EmptyLogException();})
+                    .orElseThrow(() -> {
+                        throw new EmptyLogException();
+                    })
                     .getEndSession()
                     .toLocalDate();
             if (endDate.isBefore(startDate)) {
@@ -35,11 +41,11 @@ public class CountSleeplessNight implements Function<SleepingLog, SleepAnalysisR
             Long countNormalSession = Stream.iterate(startDate, date -> date.plusDays(1))
                     .limit(totalNight + 1)
                     .filter(sleepNightDate -> sleepingLog.getLog().stream()
-                             .anyMatch(session ->
-                                     (session.getStartSession().toLocalDate().isBefore(session.getEndSession().toLocalDate()) &&
-                                      session.getEndSession().toLocalDate().equals(sleepNightDate)) ||
-                                     (session.getStartSession().toLocalDate().equals(sleepNightDate) &&
-                                      session.getStartSession().toLocalTime().isBefore(NORMAL_END_SLEEP_TIME))))
+                            .anyMatch(session ->
+                                    (session.getStartSession().toLocalDate().isBefore(session.getEndSession().toLocalDate()) &&
+                                            session.getEndSession().toLocalDate().equals(sleepNightDate)) ||
+                                            (session.getStartSession().toLocalDate().equals(sleepNightDate) &&
+                                                    session.getStartSession().toLocalTime().isBefore(NORMAL_END_SLEEP_TIME))))
                     .count();
             return new SleepAnalysisResult("Количество бессонных ночей: ",
                     String.valueOf(totalNight - countNormalSession));

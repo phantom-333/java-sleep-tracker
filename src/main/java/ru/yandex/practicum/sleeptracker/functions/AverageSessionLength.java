@@ -7,7 +7,7 @@ public class AverageSessionLength implements Function<SleepingLog, SleepAnalysis
     public SleepAnalysisResult apply(SleepingLog sleepingLog) {
         try {
             return new SleepAnalysisResult("Средняя продолжительность сессии (в минутах): ",
-                    String.format("%.2f", sleepingLog.getLog().stream()
+                    String.format("%.0f", sleepingLog.getLog().stream()
                             .mapToLong(sleepingSession -> sleepingSession.getDuration().toMinutes())
                             .average()
                             .orElseThrow(() -> {

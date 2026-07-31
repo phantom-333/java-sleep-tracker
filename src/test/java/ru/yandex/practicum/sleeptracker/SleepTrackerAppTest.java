@@ -231,7 +231,7 @@ public class SleepTrackerAppTest {
         } catch (SleepingLogException e) {
             System.out.println(e.getMessage());
         }
-        assertEquals("Средняя продолжительность сессии (в минутах): 450,00", function.apply(log).toString(), "Функция AverageSessionLength выдает неверный результат");
+        assertEquals("Средняя продолжительность сессии (в минутах): 450", function.apply(log).toString(), "Функция AverageSessionLength выдает неверный результат");
     }
 
     @Test

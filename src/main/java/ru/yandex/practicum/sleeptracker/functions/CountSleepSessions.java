@@ -1,5 +1,7 @@
 package ru.yandex.practicum.sleeptracker.functions;
+
 import ru.yandex.practicum.sleeptracker.*;
+
 import java.util.function.Function;
 
 public class CountSleepSessions implements Function<SleepingLog, SleepAnalysisResult> {

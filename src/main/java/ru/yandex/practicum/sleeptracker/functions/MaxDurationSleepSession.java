@@ -1,6 +1,7 @@
 package ru.yandex.practicum.sleeptracker.functions;
 
 import ru.yandex.practicum.sleeptracker.*;
+
 import java.util.function.Function;
 
 public class MaxDurationSleepSession implements Function<SleepingLog, SleepAnalysisResult> {
@@ -10,7 +11,9 @@ public class MaxDurationSleepSession implements Function<SleepingLog, SleepAnaly
             return new SleepAnalysisResult("Максимальная продолжительность сессии (в минутах): ",
                     String.valueOf(sleepingLog.getLog().stream()
                             .max(SleepingSession.durationComparator)
-                            .orElseThrow(() -> {throw new EmptyLogException();})
+                            .orElseThrow(() -> {
+                                throw new EmptyLogException();
+                            })
                             .getDuration()
                             .toMinutes()
                     ));

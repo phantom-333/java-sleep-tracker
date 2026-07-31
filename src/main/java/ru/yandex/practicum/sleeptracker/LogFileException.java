@@ -5,5 +5,7 @@ public class LogFileException extends Exception {
         super(message);
     }
 
-    public LogFileException(Throwable cause) { super(cause); }
+    public LogFileException(Throwable cause) {
+        super(cause);
+    }
 }

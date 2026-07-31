@@ -1,11 +1,12 @@
 package ru.yandex.practicum.sleeptracker.functions;
+
 import ru.yandex.practicum.sleeptracker.*;
 
 import java.time.LocalTime;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class UserClassification  implements Function<SleepingLog, SleepAnalysisResult> {
+public class UserClassification implements Function<SleepingLog, SleepAnalysisResult> {
     private static final LocalTime OWL_START_SLEEP_TIME = LocalTime.of(23, 0);
     private static final LocalTime OWL_END_SLEEP_TIME = LocalTime.of(9, 0);
     private static final LocalTime LARK_START_SLEEP_TIME = LocalTime.of(22, 0);
@@ -16,13 +17,13 @@ public class UserClassification  implements Function<SleepingLog, SleepAnalysisR
         int owl = sleepingLog.getLog().stream()
                 .filter((sleepingSession) ->
                         LocalTime.from(sleepingSession.getStartSession()).isAfter(OWL_START_SLEEP_TIME) &&
-                        LocalTime.from(sleepingSession.getEndSession()).isAfter(OWL_END_SLEEP_TIME))
+                                LocalTime.from(sleepingSession.getEndSession()).isAfter(OWL_END_SLEEP_TIME))
                 .collect(Collectors.toList())
                 .size(); //количество ночей, характерных для "Совы"
         int lark = sleepingLog.getLog().stream()
                 .filter((sleepingSession) ->
                         LocalTime.from(sleepingSession.getStartSession()).isBefore(LARK_START_SLEEP_TIME) &&
-                        LocalTime.from(sleepingSession.getEndSession()).isBefore(LARK_END_SLEEP_TIME))
+                                LocalTime.from(sleepingSession.getEndSession()).isBefore(LARK_END_SLEEP_TIME))
                 .collect(Collectors.toList())
                 .size(); //количество ночей, характерных для "Жаворонка"
         int pigeon = sleepingLog.getLog().size() - owl - lark; //количество ночей, характерных для "Голубя"

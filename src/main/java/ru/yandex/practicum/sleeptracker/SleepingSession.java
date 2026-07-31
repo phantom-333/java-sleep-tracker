@@ -16,7 +16,7 @@ public class SleepingSession {
     public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
     public SleepingSession(SleepQuality quality, LocalDateTime startSession, LocalDateTime endSession)
-                                                    throws NullPointerException, IllegalArgumentException {
+            throws NullPointerException, IllegalArgumentException {
         if (quality == null || startSession == null || endSession == null) {
             throw new NullPointerException("Входные данные сессии сна не могут быть null");
         }

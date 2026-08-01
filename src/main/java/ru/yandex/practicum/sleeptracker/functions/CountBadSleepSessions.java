@@ -2,7 +2,6 @@ package ru.yandex.practicum.sleeptracker.functions;
 
 import ru.yandex.practicum.sleeptracker.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class CountBadSleepSessions implements Function<SleepingLog, SleepAnalysisResult> {
     @Override

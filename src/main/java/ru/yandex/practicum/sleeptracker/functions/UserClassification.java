@@ -4,7 +4,6 @@ import ru.yandex.practicum.sleeptracker.*;
 
 import java.time.LocalTime;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class UserClassification implements Function<SleepingLog, SleepAnalysisResult> {
     private static final LocalTime OWL_START_SLEEP_TIME = LocalTime.of(23, 0);

@@ -10,10 +10,7 @@ public class AverageSessionLength implements Function<SleepingLog, SleepAnalysis
                     String.format("%.0f", sleepingLog.getLog().stream()
                             .mapToLong(sleepingSession -> sleepingSession.getDuration().toMinutes())
                             .average()
-                            .orElseThrow(() -> {
-                                throw new EmptyLogException();
-                            }))
-            );
+                            .orElseThrow(EmptyLogException::new)));
         } catch (EmptyLogException e) {
             return new SleepAnalysisResult("Средняя продолжительность сессии (в минутах): ", "0");
         }

@@ -7,36 +7,35 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class CountSleeplessNight implements Function<SleepingLog, SleepAnalysisResult> {
+    private static final LocalTime NORMAL_START_SLEEP_TIME = LocalTime.of(0, 0);
     private static final LocalTime NORMAL_END_SLEEP_TIME = LocalTime.of(6, 0);
+    private static final int DAY_ITERATOR = 1;
+    private static final int HOUR_DAY_DELIMETER = 12;   //граница суток (час), относительно которого первая сессия сна относится к предыдущей или к следующей ночи.
 
     @Override
     public SleepAnalysisResult apply(SleepingLog sleepingLog) {
         try {
             LocalDateTime startPeriodDateTime = sleepingLog.getLog().stream()
                     .min(SleepingSession.startSleepSessionComparator)
-                    .orElseThrow(() -> {
-                        throw new EmptyLogException();
-                    })
+                    .orElseThrow(EmptyLogException::new)
                     .getStartSession();
-            if (startPeriodDateTime.getHour() > 12) {
+            if (startPeriodDateTime.getHour() > HOUR_DAY_DELIMETER) {
                 startPeriodDateTime = startPeriodDateTime.plusDays(1);
             }
-            startPeriodDateTime = startPeriodDateTime.withHour(0).withMinute(0);
+            startPeriodDateTime = LocalDateTime.of(startPeriodDateTime.toLocalDate(), NORMAL_START_SLEEP_TIME);
             LocalDate startDate = startPeriodDateTime.toLocalDate();
             LocalDate endDate = sleepingLog.getLog().stream()
                     .max(SleepingSession.endSleepSessionComparator)
-                    .orElseThrow(() -> {
-                        throw new EmptyLogException();
-                    })
+                    .orElseThrow(EmptyLogException::new)
                     .getEndSession()
                     .toLocalDate();
             if (endDate.isBefore(startDate)) {
                 endDate = startDate;
             }
             Period analiticsPeriod = Period.between(startDate, endDate);
-            int totalNight = analiticsPeriod.getDays() + 1;
-            Long countNormalSession = Stream.iterate(startDate, date -> date.plusDays(1))
-                    .limit(totalNight + 1)
+            int totalNight = analiticsPeriod.getDays() + DAY_ITERATOR;
+            long countNormalSession = Stream.iterate(startDate, date -> date.plusDays(DAY_ITERATOR))
+                    .limit(totalNight + DAY_ITERATOR)
                     .filter(sleepNightDate -> sleepingLog.getLog().stream()
                             .anyMatch(session ->
                                     (session.getStartSession().toLocalDate().isBefore(session.getEndSession().toLocalDate()) &&

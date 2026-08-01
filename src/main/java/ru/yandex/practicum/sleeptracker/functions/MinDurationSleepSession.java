@@ -11,9 +11,7 @@ public class MinDurationSleepSession implements Function<SleepingLog, SleepAnaly
             return new SleepAnalysisResult("Минимальная продолжительность сессии (в минутах): ",
                     String.valueOf(sleepingLog.getLog().stream()
                             .min(SleepingSession.durationComparator)
-                            .orElseThrow(() -> {
-                                throw new EmptyLogException();
-                            })
+                            .orElseThrow(EmptyLogException::new)
                             .getDuration()
                             .toMinutes()
                     ));

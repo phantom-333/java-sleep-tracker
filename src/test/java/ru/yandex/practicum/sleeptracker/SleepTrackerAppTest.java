@@ -22,33 +22,28 @@ public class SleepTrackerAppTest {
     private PrintWriter testLogFile;
     private String testFilePath;
     private Function<SleepingLog, SleepAnalysisResult> function;
-    private PrintWriter pwLog = new PrintWriter(System.out);
+    private final PrintWriter pwLog = new PrintWriter(System.out);
 
     @TempDir
     Path tempDir;
 
     @Test
-    public void sleepengSessionIlleggalArgumentTest() {
-        assertThrows(NullPointerException.class, () -> {
-            new SleepingSession(null, LocalDateTime.now(), LocalDateTime.now());
-        }, "Тест на передачу в SleepingSession null-аргументов не пройден");
+    public void sleepingSessionIllegalArgumentTest() {
+        assertThrows(NullPointerException.class, () -> new SleepingSession(null, LocalDateTime.now(), LocalDateTime.now()),
+                "Тест на передачу в SleepingSession null-аргументов не пройден");
 
-        assertThrows(NullPointerException.class, () -> {
-            new SleepingSession(SleepQuality.GOOD, null, LocalDateTime.now());
-        }, "Тест на передачу в SleepingSession null-аргументов не пройден");
+        assertThrows(NullPointerException.class, () -> new SleepingSession(SleepQuality.GOOD, null, LocalDateTime.now()),
+                "Тест на передачу в SleepingSession null-аргументов не пройден");
 
-        assertThrows(NullPointerException.class, () -> {
-            new SleepingSession(SleepQuality.GOOD, LocalDateTime.now(), null);
-        }, "Тест на передачу в SleepingSession null-аргументов не пройден");
+        assertThrows(NullPointerException.class, () -> new SleepingSession(SleepQuality.GOOD, LocalDateTime.now(), null),
+                "Тест на передачу в SleepingSession null-аргументов не пройден");
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            new SleepingSession(SleepQuality.GOOD, LocalDateTime.now(), LocalDateTime.now().minusHours(1));
-        }, "Тест на передачу в SleepingSession некорректных параметров временных интервалов не пройден");
+        assertThrows(IllegalArgumentException.class, () -> new SleepingSession(SleepQuality.GOOD, LocalDateTime.now(), LocalDateTime.now().minusHours(1)),
+                "Тест на передачу в SleepingSession некорректных параметров временных интервалов не пройден");
 
         LocalDateTime dateTime = LocalDateTime.now();
-        assertThrows(IllegalArgumentException.class, () -> {
-            new SleepingSession(SleepQuality.GOOD, dateTime.minusDays(1), dateTime);
-        }, "Тест на передачу в SleepingSession некорректных параметров временных интервалов не пройден");
+        assertThrows(IllegalArgumentException.class, () -> new SleepingSession(SleepQuality.GOOD, dateTime.minusDays(1), dateTime),
+                "Тест на передачу в SleepingSession некорректных параметров временных интервалов не пройден");
 
         assertDoesNotThrow(() -> {
             new SleepingSession(SleepQuality.GOOD, dateTime.minusHours(23).minusMinutes(59).minusSeconds(59), dateTime);
@@ -56,7 +51,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    public void sleepengSessionTest() {
+    public void sleepingSessionTest() {
         LocalDateTime dateTime = LocalDateTime.parse("2026-07-15T00:30:15");
         SleepingSession session = new SleepingSession(SleepQuality.GOOD, dateTime, dateTime.plusHours(9));
         assertEquals(SleepQuality.GOOD, session.getQuality(), "getQuality() в классе SleepQuality выдает некорректный результат");
@@ -65,12 +60,12 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    public void sleepengSessionParseTest() {
+    public void sleepingSessionParseTest() {
         String sessionStr = "01.10.25 22:15;02.10.25 08:00;GOOD";
         SleepingSession session = null;
         try {
             session = SleepingSession.parse(sessionStr);
-            assertTrue(sessionStr.equals(session.toString()), "метод parse() в классе SleepQuality выдает некорректный результат");
+            assertEquals(sessionStr, session.toString(), "метод parse() в классе SleepQuality выдает некорректный результат");
         } catch (IllegalSleepingSessionFormat e) {
             System.out.println(e.getMessage());
         }
@@ -351,7 +346,7 @@ public class SleepTrackerAppTest {
         function = new CountSleeplessNight();
         testLogFile.println("01.10.25 07:00;01.10.25 10:00;GOOD");  //01-02.10 - бессонная
         testLogFile.println("02.10.25 01:00;02.10.25 02:00;GOOD");  //01-02.10 - не бессонная
-        testLogFile.println("02.10.25 09:00;02.10.25 11:00;GOOD");  //01-02.10 - интервал сна относится к "бессонным", но сама ночь - нет
+        testLogFile.println("02.10.25 09:00;02.10.25 11:00;GOOD");  //01-02.10 - интервал сна относится к "бессонным", но сама ночь — нет.
         testLogFile.println("03.10.25 07:00;03.10.25 09:00;GOOD");  //02-03.10 - бессонная
         testLogFile.flush();
         try {

@@ -18,13 +18,13 @@ public class UserClassification implements Function<SleepingLog, SleepAnalysisRe
                 .filter((sleepingSession) ->
                         LocalTime.from(sleepingSession.getStartSession()).isAfter(OWL_START_SLEEP_TIME) &&
                                 LocalTime.from(sleepingSession.getEndSession()).isAfter(OWL_END_SLEEP_TIME))
-                .collect(Collectors.toList())
+                .toList()
                 .size(); //количество ночей, характерных для "Совы"
         int lark = sleepingLog.getLog().stream()
                 .filter((sleepingSession) ->
                         LocalTime.from(sleepingSession.getStartSession()).isBefore(LARK_START_SLEEP_TIME) &&
                                 LocalTime.from(sleepingSession.getEndSession()).isBefore(LARK_END_SLEEP_TIME))
-                .collect(Collectors.toList())
+                .toList()
                 .size(); //количество ночей, характерных для "Жаворонка"
         int pigeon = sleepingLog.getLog().size() - owl - lark; //количество ночей, характерных для "Голубя"
         if (owl > lark && owl > pigeon) {

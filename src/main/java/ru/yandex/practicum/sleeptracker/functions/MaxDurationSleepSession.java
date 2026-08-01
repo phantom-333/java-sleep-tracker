@@ -11,9 +11,7 @@ public class MaxDurationSleepSession implements Function<SleepingLog, SleepAnaly
             return new SleepAnalysisResult("Максимальная продолжительность сессии (в минутах): ",
                     String.valueOf(sleepingLog.getLog().stream()
                             .max(SleepingSession.durationComparator)
-                            .orElseThrow(() -> {
-                                throw new EmptyLogException();
-                            })
+                            .orElseThrow(EmptyLogException::new)
                             .getDuration()
                             .toMinutes()
                     ));
